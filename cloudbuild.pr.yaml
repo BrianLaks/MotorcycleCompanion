@@ -1,0 +1,49 @@
+# PR check — validate a pull request WITHOUT deploying. Wired to a Cloud Build
+# trigger on "Pull request" events (see DEPLOY.md). Catches syntax errors in the
+# hand-edited data files, a broken Dockerfile, or an app that won't boot —
+# before the change can merge to main and auto-deploy.
+
+steps:
+  # 1. Parse every JS file we hand-edit (catches unbalanced braces etc.)
+  - id: syntax-check
+    name: node:20-alpine
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -e
+        echo "Syntax-checking JS…"
+        for f in server.js js/app.js js/store.js js/teardown3d.js data/*.js; do
+          echo "  $f"; node --check "$f"
+        done
+        echo "All JS parsed OK."
+
+  # 2. The image must build
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', 'moto-companion-pr:${SHORT_SHA}', '.']
+
+  # 3. The app must actually boot and answer the health check
+  - id: smoke-test
+    name: gcr.io/cloud-builders/docker
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -e
+        docker run -d --name pr-test moto-companion-pr:${SHORT_SHA}
+        ok=0
+        for i in $(seq 1 12); do
+          if docker exec pr-test wget -qO- http://127.0.0.1:8080/healthz 2>/dev/null | grep -q ok; then
+            ok=1; break
+          fi
+          sleep 1
+        done
+        docker logs pr-test || true
+        docker rm -f pr-test || true
+        if [ "$ok" != "1" ]; then echo "app did not become healthy"; exit 1; fi
+        echo "Boot + /healthz OK."
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 900s

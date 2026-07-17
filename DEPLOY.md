@@ -161,6 +161,20 @@ done
 Now `git push` (or merge a PR) to `main` → Cloud Build builds + deploys. Watch
 it under **Cloud Build → History**.
 
+### PR check (build + smoke-test, no deploy)
+`cloudbuild.pr.yaml` syntax-checks the JS, builds the image, and boots it to hit
+`/healthz` — but does **not** deploy. Add a second trigger so it runs on every PR:
+
+1. Console → **Cloud Build → Triggers** → **Create trigger**.
+2. Event = **Pull request**, Branch (base) = `^main$`,
+   Configuration = *Cloud Build configuration file*, location `/cloudbuild.pr.yaml`.
+   (No substitutions needed — it never deploys, so no password.)
+3. Create.
+
+To make a red check actually *block* the merge: GitHub → repo **Settings →
+Branches → Add branch ruleset** for `main` → require the Cloud Build status check
+to pass. Now a broken change fails the PR before it can reach `main`.
+
 ## Test the image locally first (optional)
 ```bash
 docker build -t moto-companion .
