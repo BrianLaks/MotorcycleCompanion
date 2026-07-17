@@ -134,6 +134,33 @@ Put a TLS proxy (Caddy/nginx) or a load balancer in front for HTTPS.
 
 ---
 
+## Auto-deploy on git push (CI/CD)
+
+`cloudbuild.yaml` in this repo builds the image and deploys to Cloud Run. Wire
+it to a Cloud Build trigger once, then every push/merge to `main` redeploys.
+
+**One-time setup (Console — it handles the GitHub OAuth for you):**
+1. Console → **Cloud Build → Triggers** → **Connect Repository** → **GitHub**,
+   authorize, and pick `BrianLaks/MotorcycleCompanion`.
+2. **Create trigger**: Event = *Push to a branch*, Branch = `^main$`,
+   Configuration = *Cloud Build configuration file*, location `/cloudbuild.yaml`.
+3. Under **Substitution variables** add `_BASIC_AUTH_PASS` = your password.
+4. Create. (If it asks to grant Cloud Build the Cloud Run roles, say yes.)
+
+**If a build fails on permissions**, grant the build service account the deploy
+roles (run in Cloud Shell):
+```bash
+PROJECT_ID=motorcyclecompanion-502718
+PN=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+for R in run.admin iam.serviceAccountUser artifactregistry.writer; do
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:${PN}-compute@developer.gserviceaccount.com" --role=roles/$R
+done
+```
+
+Now `git push` (or merge a PR) to `main` → Cloud Build builds + deploys. Watch
+it under **Cloud Build → History**.
+
 ## Test the image locally first (optional)
 ```bash
 docker build -t moto-companion .
