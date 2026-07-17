@@ -142,6 +142,12 @@ this contract, so the renderer is frozen.
 
 ## Onboarding process — research → author → validate
 
+> The exhaustive field-by-field contract an LLM/agent must fill to add a bike —
+> every spec, part, interval, teardown step and video — lives in
+> **[BIKE_ONBOARDING_SPEC.md](BIKE_ONBOARDING_SPEC.md)**, with a JSON output
+> template. That's the input to the agent workflow below.
+
+
 A repeatable per-bike pipeline. Steps 1–2 decide how little work is left.
 
 **1. Classify.** Make / model / year-range → archetype, engine type, final
