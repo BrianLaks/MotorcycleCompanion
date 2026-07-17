@@ -126,5 +126,5 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Motorcycle Companion listening on 0.0.0.0:${PORT}`);
   console.log(`User data file: ${DB_FILE}`);
-  console.log(`Auth: ${EXPECTED_AUTH ? "Basic (enabled)" : "NONE — do not expose publicly without a proxy"}`);
+  console.log(`Auth: ${auth.enabled ? "enabled (Google / password)" : "NONE — do not expose publicly without a proxy"}`);
 });
