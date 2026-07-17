@@ -127,6 +127,8 @@ function setStorageChip(mode, ok) {
   el.title = mode === "server"
     ? "User data is saved on the host via the built-in API."
     : "User data is saved in this browser only (localStorage). Use Export for backups.";
+  const out = $("#signoutbtn"); // only meaningful when served (auth may be on)
+  if (out) out.style.display = mode === "server" ? "" : "none";
 }
 
 /* =========================================================================

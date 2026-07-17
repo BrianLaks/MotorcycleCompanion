@@ -12,35 +12,25 @@
      PORT             listen port (Cloud Run injects this, default 8080-ish)
      DATA_DIR         directory for db.json — point at a mounted volume so the
                       data survives container restarts (default ./userdata)
-     BASIC_AUTH_USER  if set, the whole site + API require HTTP Basic Auth
-     BASIC_AUTH_PASS  password for the above
+     Login (all optional — see auth.js):
+       GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET   enable "Sign in with Google"
+       BASIC_AUTH_USER  / BASIC_AUTH_PASS         enable a shared password login
+       ALLOWED_EMAILS   comma-separated allowlist (empty = any Google account)
+       SESSION_SECRET   cookie-signing key (auto-derived if unset)
 
-   NOTE: with no BASIC_AUTH_USER set there is NO authentication — anyone who
-   can reach the port can read/write the garage. Set the two BASIC_AUTH_* vars
-   (or put an authenticating proxy / IAP in front) before exposing it publicly.
+   NOTE: with none of those set there is NO authentication — anyone who can
+   reach the port can read/write the garage. Set a login method before exposing
+   it publicly.
    ========================================================================= */
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const auth = require("./auth");
 
 const PORT = Number(process.env.PORT) || Number(process.argv[2]) || 8710;
 const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, "userdata");
 const DB_FILE = path.join(DATA_DIR, "db.json");
-
-const AUTH_USER = process.env.BASIC_AUTH_USER || "";
-const AUTH_PASS = process.env.BASIC_AUTH_PASS || "";
-const EXPECTED_AUTH = AUTH_USER
-  ? "Basic " + Buffer.from(AUTH_USER + ":" + AUTH_PASS).toString("base64")
-  : null;
-/* Length-safe constant-time-ish compare so timing doesn't leak the password. */
-function authOk(header) {
-  if (!EXPECTED_AUTH) return true;              // auth disabled
-  if (!header || header.length !== EXPECTED_AUTH.length) return false;
-  let diff = 0;
-  for (let i = 0; i < header.length; i++) diff |= header.charCodeAt(i) ^ EXPECTED_AUTH.charCodeAt(i);
-  return diff === 0;
-}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -76,10 +66,18 @@ const server = http.createServer((req, res) => {
   /* ---- health check (unauthenticated, for Cloud Run / load balancers) ---- */
   if (pathname === "/healthz") { res.writeHead(200, { "Content-Type": "text/plain" }); res.end("ok"); return; }
 
-  /* ---- optional HTTP Basic Auth (gates the whole site + API) ---- */
-  if (EXPECTED_AUTH && !authOk(req.headers.authorization)) {
-    res.writeHead(401, { "WWW-Authenticate": 'Basic realm="Motorcycle Companion", charset="UTF-8"' });
-    res.end("authentication required");
+  /* ---- login routes (/auth/*): Google + shared password ---- */
+  if (auth.handleAuthRoute(req, res, pathname, url)) return;
+
+  /* ---- gate everything else ---- */
+  if (!auth.isAuthed(req)) {
+    if (pathname.startsWith("/api/")) {          // API → 401 (the app can react)
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end('{"error":"authentication required"}');
+    } else {                                     // page → show the login screen
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(auth.loginPage(req));
+    }
     return;
   }
 
