@@ -1,0 +1,9 @@
+# Files not to upload to Cloud Build. Keep the Dockerfile + app code.
+.git/
+.gitignore
+userdata/
+*.bak
+*.tmp
+node_modules/
+.claude/
+scratchpad/

@@ -1,0 +1,15 @@
+# Never bake user data or local cruft into the image — data lives on a volume.
+userdata/
+*.bak
+*.tmp
+.git/
+.gitignore
+node_modules/
+npm-debug.log
+Dockerfile
+.dockerignore
+.gcloudignore
+DEPLOY.md
+*.md
+.claude/
+scratchpad/

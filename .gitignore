@@ -1,0 +1,11 @@
+# Personal user data — never commit garages, VINs, service logs
+userdata/
+*.bak
+*.tmp
+
+# OS / editor / tooling cruft
+.DS_Store
+Thumbs.db
+node_modules/
+npm-debug.log
+.claude/

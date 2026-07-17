@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Desmo Service Companion</title>
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="appbar">
+    <div class="appbar-inner">
+      <div class="brand-mark">
+        <span class="tt" id="brandtt">Motorcycle<b>·</b>Companion</span>
+        <span class="sub" id="brandsub">Garage &amp; Service Log</span>
+      </div>
+      <div class="spacer"></div>
+      <span class="storagemode" id="storagemode">…</span>
+      <select id="userselect" class="inp no-print" title="Active rider"></select>
+      <button class="iconbtn no-print" id="themebtn" title="Toggle theme">Theme</button>
+      <button class="iconbtn no-print" id="printbtn" title="Print current view">Print</button>
+      <button class="iconbtn no-print" id="exportbtn" title="Download a JSON backup of all data">Export</button>
+      <button class="iconbtn no-print" id="importbtn" title="Restore from a JSON backup">Import</button>
+      <input type="file" id="importfile" accept="application/json,.json" style="display:none">
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="brandvibe" id="brandvibe" style="display:none"></div>
+
+    <div class="disclaimer">
+      <b>Reference aid — not the manual.</b> Confirm every value tagged
+      <span class="verify">verify</span> against the manufacturer's official workshop manual for your VIN.
+      Shim and torque figures are a starting point: re-measure after any change. These are interference
+      engines — wrong timing or a wrong shim can bend valves.
+    </div>
+
+    <section class="idcard" id="idcard" aria-live="polite" style="display:none"></section>
+
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <div id="content"></div>
+
+    <footer>
+      <span id="brandfoot">Motorcycle Companion</span> · reference data in <span class="mono">data/</span> ·
+      user data saved per the storage badge above · Export regularly.
+    </footer>
+  </div>
+
+  <!-- Reference "database" — plain JS files so the app also works from file:// -->
+  <script src="data/brands.js"></script>
+  <script src="data/catalog.js"></script>
+  <script src="data/schedules.js"></script>
+  <script src="data/services.js"></script>
+  <script src="data/access.js"></script>
+  <script src="data/components.js"></script>
+  <script src="data/archetypes.js"></script>
+  <script src="data/teardown3d.js"></script>
+  <!-- 3D engine (vendored Three.js) + data layer + app -->
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/teardown3d.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
