@@ -67,6 +67,34 @@ window.DB.schedules = {
     ],
   },
 
+  /* Suzuki DR-Z400 (S/SM/E). Short 3,500 mi oil interval, long 15,000 mi valve
+     check. Chain cam drive (no belts) and a CABLE clutch (no clutch fluid).
+     From the Suzuki maintenance schedule — confirm against your owner's manual. */
+  suzuki_drz400: {
+    label: "Suzuki DR-Z400 — 3,500 mi oil / 15,000 mi valve",
+    note: "Short oil intervals by design — it's a dry-sump single that gets ridden hard. " +
+          "No timing belts (chain cam drive) and no clutch fluid (cable clutch). " +
+          "Halve the dirt-related intervals if you ride it off-road in dust or water.",
+    items: [
+      { service: "oil_change",   everyMi: 3500, everyKm: 6000, everyMonths: 12,
+        note: "Every service. Dry sump — see the bike-specific fill/check procedure", verify: true },
+      { service: "valve_check",  everyMi: 15000, everyKm: 24000,
+        note: "Shim-under-bucket; intake 0.10–0.20 mm, exhaust 0.20–0.30 mm (cold)", verify: true },
+      { service: "spark_plugs",  everyMi: 7000, everyKm: 12000,
+        note: "Every 2 services (NGK CR8E)", verify: true },
+      { service: "air_filter",   everyMi: 3500, everyKm: 6000,
+        note: "Clean/inspect every service — much more often in dust or after water", verify: true },
+      { service: "brake_fluid",  everyMonths: 24, verify: true },
+      { service: "coolant",      everyMonths: 48, verify: true },
+      { service: "chain_service", everyMi: 600, everyKm: 1000,
+        note: "Clean, lube, check slack — after every wet or dirty ride", verify: false },
+      { service: "chain_replace", everyMi: 15000, everyKm: 24000,
+        note: "Chain + both sprockets as a set — much sooner if ridden in dirt", verify: false },
+      { service: "annual_check", everyMonths: 12,
+        note: "Also check the balancer-shaft adjuster condition (see Mods)", verify: false },
+    ],
+  },
+
   /* Example second schedule for future bikes (DVT engines have longer
      desmo intervals). Add models pointing here as you acquire them. */
   dvt_15k: {

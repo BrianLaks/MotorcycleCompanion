@@ -211,4 +211,66 @@ window.DB.accessModules = {
       ],
     },
   },
+
+  /* Suzuki DR-Z400 (S/SM). Carbureted single — no belt covers, no ECU tray.
+     Steps are DR-Z-plausible; confirm against the service manual / a teardown video. */
+  drz400: {
+    bodywork: {
+      label: "Seat & side panels",
+      needs: [],
+      teardown: [
+        "Remove the 2 seat bolts; slide the seat rearward off its front tongue",
+        "Remove the left + right shrouds / number panels (bolts into the tank and radiator/frame)",
+      ],
+      restore: [
+        "Refit both shrouds / number panels — grommets seated, don't overtighten the plastic",
+        "Refit the seat: front tongue first, then the 2 rear bolts; road test + leak check",
+      ],
+    },
+    cooling_drain: {
+      label: "Coolant drain",
+      needs: [],
+      teardown: ["Engine COLD; remove the radiator cap and drain at the water-pump drain bolt"],
+      restore: ["New sealing washer; torque the drain bolt; refill with premix and burp the air out"],
+    },
+    tank: {
+      label: "Fuel tank",
+      needs: ["bodywork"],
+      teardown: [
+        "Turn the fuel petcock OFF; pull the fuel line and the vacuum line (fuel WILL drip — rag it)",
+        "Remove the tank bolts and lift the tank up and back",
+      ],
+      restore: ["Refit the tank; reconnect fuel + vacuum + vent lines; bolts in; petcock ON and check for leaks"],
+    },
+    radiator: {
+      label: "Radiators",
+      needs: ["cooling_drain", "bodywork"],
+      teardown: ["Unbolt the radiator(s) and ease them forward with hoses attached — protect the fins"],
+      restore: ["Refit and bolt the radiator(s); check hose routing and clamps"],
+    },
+    carb_airbox: {
+      label: "Carb & airbox",
+      needs: ["tank"],
+      teardown: [
+        "Loosen the airbox boot and carb clamps; disconnect the throttle cables and choke",
+        "Slide the carb back / out of the way — TAPE the intake and airbox openings",
+      ],
+      restore: [
+        "Refit the carb between the boots (both clamps seated square); reconnect throttle cables + choke",
+        "Check the throttle snaps shut freely with the bars at full lock both ways",
+      ],
+    },
+    valve_covers: {
+      label: "Cam cover",
+      needs: ["carb_airbox"],
+      teardown: [
+        "Pull the plug cap and remove the spark plug (so you can turn the engine over by hand)",
+        "Remove the cam-cover bolts and lift the cover off",
+      ],
+      restore: [
+        "Clean the cover mating face",
+        "New cam-cover gasket; torque the cover bolts to spec; new/refit spark plug and cap",
+      ],
+    },
+  },
 };

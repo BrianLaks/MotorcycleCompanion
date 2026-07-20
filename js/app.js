@@ -412,10 +412,14 @@ function sessionSteps(session, bike) {
     const m = mods[mid];
     (m.teardown || []).forEach((text, i) => out.push({ key: "td_" + mid + "_" + i, phase: "teardown", group: m.label, groupId: mid, text }));
   });
+  const spec = specFor(bike);
   session.services.forEach(svcId => {
     const svc = DB.services[svcId]; if (!svc) return;
     const usesAccess = (svc.needs || []).length > 0 && hasAccess;
-    const list = usesAccess ? (svc.work || svc.steps || []) : (svc.steps || svc.work || []);
+    // a bike can override a service's procedure entirely (e.g. the DR-Z's dry-sump oil change)
+    const ov = spec && spec.serviceOverrides && spec.serviceOverrides[svcId];
+    const list = (ov && ov.steps) ? ov.steps
+      : (usesAccess ? (svc.work || svc.steps || []) : (svc.steps || svc.work || []));
     list.forEach((text, i) => out.push({ key: "wk_" + svcId + "_" + i, phase: "work", group: svc.name, groupId: svcId, svcId, text }));
   });
   [...ordered].reverse().forEach(mid => {
@@ -547,7 +551,11 @@ function panelSessionActive(bike, session) {
         <span style="flex:1"></span>
         <a class="iconbtn" style="text-transform:none;letter-spacing:0" href="${esc(ytSearchUrl(vidQuery))}" target="_blank" rel="noopener" title="Search YouTube for this job">▶ Video</a>
       </h2>
-      ${svc.note ? `<p class="note" style="margin-top:0">${esc(svc.note)}</p>` : ""}
+      ${(() => {
+        const ov = spec && spec.serviceOverrides && spec.serviceOverrides[svcId];
+        if (ov && ov.note) return `<p class="note" style="margin-top:0;color:var(--ink);border-left:3px solid var(--brand);padding-left:10px"><b>This bike:</b> ${esc(ov.note)}</p>`;
+        return svc.note ? `<p class="note" style="margin-top:0">${esc(svc.note)}</p>` : "";
+      })()}
       ${parts ? `<div class="shoplist" style="margin-bottom:12px">${parts}</div>` : ""}
       <ul class="steps">${rows}</ul>
       <div class="field" style="margin-top:12px"><label>Notes for the log (parts used, measurements, anything odd)</label>
@@ -1468,6 +1476,34 @@ function panelReference() {
       <div class="scroll"><table><tr><th>Fastener</th><th>Torque</th><th></th></tr>${torqueRows}</table></div>
       <p class="note">All torque figures are unconfirmed — set from the official manual before final assembly.</p>
     </div>
+    ${s.tires ? `<div class="card">
+      <h2>Tyres & fitments</h2>
+      ${s.tires.note ? `<p class="note" style="margin-top:0;color:var(--ink)">${esc(s.tires.note)}</p>` : ""}
+      <div class="scroll"><table>
+        <tr><th>Variant</th><th>Front</th><th>Rear</th><th>Stock fitment</th><th></th></tr>
+        ${(s.tires.variants || []).map(v => `<tr>
+          <td><b>${esc(v.label)}</b></td>
+          <td class="mono">${esc(v.front)}</td>
+          <td class="mono">${esc(v.rear)}</td>
+          <td><small>${esc(v.stock || "")}</small></td>
+          <td>${vbadge(v.verified)}</td></tr>`).join("")}
+      </table></div>
+      ${(s.tires.choices || []).length ? `<div class="subhead">Choosing rubber <span class="verify">opinion</span></div>
+        <div class="scroll"><table><tr><th>Use case</th><th>Common picks</th><th>Trade-off</th></tr>
+        ${(s.tires.choices || []).map(c => `<tr><td><b>${esc(c.use)}</b></td><td>${esc(c.picks)}</td><td><small>${esc(c.note || "")}</small></td></tr>`).join("")}
+        </table></div>` : ""}
+      ${s.tires.pressureNote ? `<p class="note" style="margin-top:10px">${esc(s.tires.pressureNote)}</p>` : ""}
+    </div>` : ""}
+
+    ${s.mods ? `<div class="card">
+      <h2>Recommended modifications <span class="verify">community</span></h2>
+      ${s.mods.note ? `<p class="note" style="margin-top:0;color:var(--ink)">${esc(s.mods.note)}</p>` : ""}
+      ${(s.mods.items || []).map(m => `<div class="resetopt">
+        <div class="b"></div>
+        <div><div class="t">${esc(m.name)} <span class="pill ${/first|important/i.test(m.priority || "") ? "crit" : "na"}">${esc(m.priority || "")}</span></div>
+        <div class="d">${esc(m.detail)}</div></div></div>`).join("")}
+    </div>` : ""}
+
     ${s.belt ? `<div class="card">
       <h2>Belt tension by brand <span class="note">(acoustic pluck method)</span></h2>
       <div class="scroll"><table><tr><th>Belt</th><th>New</th><th>Used</th><th></th></tr>${brandRows}</table></div>

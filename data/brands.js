@@ -35,6 +35,19 @@ window.DB.brands = {
           "respect the belts or it bites.",
   },
 
+  suzuki: {
+    key: "suzuki",
+    app: "Suzuki",                     // → "Suzuki·Companion"
+    sub: "Team Suzuki · DR-Z",
+    accentLight: "#0B4EA2",            // Team Suzuki blue
+    accentDark: "#4C8FE0",
+    inkOn: "#ffffff",
+    vibe: "Unkillable, dirt-cheap, and technologically frozen somewhere around 2004 — " +
+          "the DR-Z shipped with a carburetor until the day they discontinued it. " +
+          "Nobody buys a Suzuki for the spec sheet; they buy one because it still fires up " +
+          "after a winter of neglect and a river crossing.",
+  },
+
   ktm: {
     key: "ktm",
     app: "KTM",                        // → "KTM·Companion"

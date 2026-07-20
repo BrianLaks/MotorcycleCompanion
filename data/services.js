@@ -224,10 +224,13 @@ window.DB.services = {
     short: "Front tire",
     resetIndicator: false,
     videoSearch: "Ducati Multistrada 950 front wheel removal",
-    partsFor: () => [
-      { label: "Front tire", part: "120/70 ZR17 (verify size on your swingarm/manual)" },
-      { label: "Valve stem", part: "replace with the tire" },
-    ],
+    partsFor: spec => {
+      const v = spec && spec.tires && spec.tires.variants;
+      return (v && v.length
+        ? v.map(x => ({ label: `Front tyre — ${x.label}`, part: x.front }))
+        : [{ label: "Front tire", part: "check the size on your swingarm sticker / manual" }]
+      ).concat([{ label: "Valve stem", part: "replace with the tire" }]);
+    },
     tools: ["Front/headstock stand", "Axle tools", "Torque wrench", "Tire machine (or a shop)"],
     note: "Mounting/balancing a tire needs a machine — most people pull the wheel here and hand it to a shop, then refit. This checklist covers the wheel R&R.",
     steps: [
@@ -247,10 +250,13 @@ window.DB.services = {
     short: "Rear tire",
     resetIndicator: false,
     videoSearch: "Ducati Multistrada 950 rear wheel removal",
-    partsFor: () => [
-      { label: "Rear tire", part: "170/60 ZR17 (verify size on your swingarm/manual)" },
-      { label: "Valve stem", part: "replace with the tire" },
-    ],
+    partsFor: spec => {
+      const v = spec && spec.tires && spec.tires.variants;
+      return (v && v.length
+        ? v.map(x => ({ label: `Rear tyre — ${x.label}`, part: x.rear }))
+        : [{ label: "Rear tire", part: "check the size on your swingarm sticker / manual" }]
+      ).concat([{ label: "Valve stem", part: "replace with the tire" }]);
+    },
     tools: ["Rear/paddock stand", "Axle tools", "Torque wrench", "Tire machine (or a shop)"],
     note: "Same idea as the front — pull the wheel, shop mounts/balances, refit. Watch chain slack + alignment on reassembly.",
     steps: [

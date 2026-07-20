@@ -102,6 +102,58 @@ window.DB.archetypes = {
     },
   },
 
+  /* Dual-sport / enduro: tall and narrow, ONE long flat seat (no pillion), no
+     windscreen, big 21" front / 18" rear spoked wheels, a HIGH front fender that
+     clears mud, small side number-panels/shrouds up by the tank (not the low
+     fairings an ADV has), and a high-routed exhaust. */
+  dualsport: {
+    label: "Dual-sport / enduro",
+    extends: "adventure",
+    colors: { paint: "#F5C518", frame: "#2A2C31", cam: "#3A3D44" },
+    camera: { pos: [2.8, 1.8, 3.2], target: [0, 0.95, 0] },
+    slots: {
+      beak: null, windscreen: null,            // no beak, no screen
+      seatPillion: null,                        // single seat only
+
+      // tall skinny wheels: 21" front, 18" rear
+      wheelFront: { at: 1.00, R: 0.33, tube: 0.055 },
+      wheelRear:  { at: -0.95, R: 0.30, tube: 0.075 },
+
+      // long-travel fork, bike sits high
+      fork: { tubeAt: [0.84, 0.78], zOff: 0.09, angle: 0.42, len: 0.96, clampAt: [0.68, 1.14] },
+      bars: { at: [0.55, 1.30], width: 0.72, mirrorAt: [0.55, 1.42], mirrorZ: 0.30 },
+      headlight: { at: [0.70, 1.22], size: [0.12, 0.20, 0.20], shroud: false },
+
+      // HIGH front fender (clears the 21" wheel), plus a small rear fender look
+      frontFender: { at: [0.94, 0.94], angle: -0.10, size: [0.50, 0.04, 0.20] },
+
+      // one long flat seat
+      seatRider: { name: "Seat (single)", at: [-0.42, 1.02], angle: -0.02, size: [0.74, 0.07, 0.28] },
+
+      // side panels move UP and FORWARD — radiator shrouds / number panels,
+      // not the low wrap-around fairings of an adventure bike
+      fairingLeft:  { side: 1,  name: "Left shroud / number panel",
+                      upperAt: [0.46, 1.06], upperSize: [0.34, 0.26, 0.02], upperZ: 0.20, upperYaw: 0.22,
+                      lowerAt: [-0.28, 0.92], lowerSize: [0.30, 0.20, 0.02], lowerZ: 0.17, lowerYaw: 0.10 },
+      fairingRight: { side: -1, name: "Right shroud / number panel",
+                      upperAt: [0.46, 1.06], upperSize: [0.34, 0.26, 0.02], upperZ: 0.20, upperYaw: 0.22,
+                      lowerAt: [-0.28, 0.92], lowerSize: [0.30, 0.20, 0.02], lowerZ: 0.17, lowerYaw: 0.10 },
+
+      // small narrow tank, single cylinder, high exhaust
+      tank: { at: [0.26, 1.06], size: [0.42, 0.18, 0.26], humpAt: [0.46, 1.10, 0],
+              humpSize: [0.18, 0.13, 0.24], rearAt: [0.02, 1.02, 0], rearSize: [0.20, 0.13, 0.18],
+              fillerAt: [0.38, 1.18, 0] },
+      engine: { comp: "engineBlock", name: "Engine (single)", at: [0.06, 0.66], width: 0.34 },
+      exhaust: { headerAt: [0.34, 0.72, 0.08], collectorAt: [-0.10, 0.52, 0.10],
+                 mufflerAt: [-0.72, 0.86, 0.17], mufflerSize: [0.42, 0.10, 0.11], mufflerRot: 0.10 },
+      subframe: { railAt: [-0.62, 0.98, 0], railLen: 0.56, grab: false },
+      radiator: { at: [0.42, 0.90], size: [0.05, 0.26, 0.30] },
+      airbox: { at: [-0.10, 1.00], size: [0.30, 0.16, 0.24] },
+      electrics: { at: [-0.46, 0.94], size: [0.22, 0.10, 0.20] },
+      finalDrive: { comp: "chain", front: [-0.30, 0.55], rear: [-0.95, 0.30], z: -0.14 },
+    },
+  },
+
   /* Plain standard/UJM — upright, no bodywork. */
   standard: {
     label: "Standard / UJM",

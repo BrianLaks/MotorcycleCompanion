@@ -214,6 +214,75 @@ window.DB.bikes3d = {
       ],
     },
   },
+
+  /* Suzuki DR-Z400S/SM — dual-sport. Uses the `dualsport` archetype: single seat,
+     no windscreen, 21"/18" wheels, high front fender, and small shroud/number
+     panels up by the tank instead of low fairings. Suzuki yellow. */
+  drz400: {
+    archetype: "dualsport",
+    colors: { paint: "#F5C518", frame: "#2A2C31", cam: "#3A3D44" },
+    scene: {
+      title: "DR-Z400 — seat, shrouds & tank",
+      phase: "Phase 1 · Access for the valve check / carb work",
+      camera: { pos: [2.8, 1.8, 3.2], target: [0, 0.95, 0] },
+      video: { search: "DRZ400 tank removal seat side panels valve check teardown" },
+      diagramRefs: [
+        ["Suzuki OEM parts fiche (Partzilla / BikeBandit)", "Exploded diagrams — the authoritative fastener map for the DR-Z"],
+        ["ThumperTalk · DRZ400 forum", "The definitive DR-Z community — teardown threads, jetting, the balancer-shaft issue"],
+        ["soloracer.com DRZ tyre guides", "Dual-sport and supermoto tyre comparisons for the S and SM"],
+      ],
+      removable: {
+        seatRider:   { explode: [-0.30, 0.55, 0] },
+        fairingLeft: { explode: [0, 0.15, 0.75] },
+        fairingRight:{ explode: [0, 0.15, -0.75] },
+        tank:        { explode: [0, 0.80, 0] },
+      },
+      steps: [
+        { id: "s1", part: "seatRider", title: "Seat (single)",
+          tools: ["8 mm socket / T-handle"],
+          videoSearch: "DRZ400 seat removal",
+          fasteners: [
+            { t: "bolt", p: [-0.74, 1.00, 0.11],  spec: "Seat bolt — left rear" },
+            { t: "bolt", p: [-0.74, 1.00, -0.11], spec: "Seat bolt — right rear" },
+          ],
+          detail: "Two bolts at the rear of the seat, then slide it back off the front tongue. One long seat — there's no pillion section to remove first.",
+        },
+        { id: "s2", part: "fairingLeft", title: "Left shroud / number panel",
+          tools: ["Phillips / 8 mm"],
+          videoSearch: "DRZ400 side panel shroud removal",
+          fasteners: [
+            { t: "bolt", p: [0.46, 1.20, 0.21], spec: "Shroud bolt — top (into tank)" },
+            { t: "bolt", p: [0.40, 0.94, 0.21], spec: "Shroud bolt — lower/radiator" },
+            { t: "bolt", p: [-0.28, 0.98, 0.18], spec: "Number-panel bolt — rear" },
+          ],
+          detail: "The shroud bolts into the tank at the top and the radiator/frame lower down — the panel comes off with the tank on. Watch for the grommets.",
+          warning: "Plastic gets brittle with age and sun. Support the panel as the last bolt comes out.",
+        },
+        { id: "s3", part: "fairingRight", title: "Right shroud / number panel",
+          tools: ["Phillips / 8 mm"],
+          videoSearch: "DRZ400 side panel shroud removal",
+          fasteners: [
+            { t: "bolt", p: [0.46, 1.20, -0.21], spec: "Shroud bolt — top (into tank)" },
+            { t: "bolt", p: [0.40, 0.94, -0.21], spec: "Shroud bolt — lower/radiator" },
+            { t: "bolt", p: [-0.28, 0.98, -0.18], spec: "Number-panel bolt — rear" },
+          ],
+          detail: "Mirror of the left side.",
+        },
+        { id: "s4", part: "tank", title: "Fuel tank",
+          tools: ["8 mm socket", "Fuel line pliers", "Rag"],
+          videoSearch: "DRZ400 fuel tank removal petcock fuel line",
+          fasteners: [
+            { t: "bolt", p: [0.44, 1.16, 0.10],  spec: "Tank bolt — front" },
+            { t: "bolt", p: [0.04, 1.10, -0.10], spec: "Tank bolt — rear" },
+            { t: "conn", p: [0.16, 0.98, -0.14], spec: "Turn the petcock OFF, then pull the fuel line" },
+            { t: "conn", p: [0.10, 1.00, 0.14],  spec: "Vacuum line + tank vent hose" },
+          ],
+          warning: "Carbureted bike — turn the petcock OFF first and expect fuel in the line. No ignition sources; rag underneath.",
+          detail: "Petcock off, fuel + vacuum lines off, two bolts, lift the tank straight up and back. That exposes the carb and the cam cover — the start of the valve check.",
+        },
+      ],
+    },
+  },
 };
 
 /* =========================================================================
