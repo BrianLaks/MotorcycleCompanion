@@ -45,6 +45,19 @@ const DRZ_MODS = {
       detail: "Stock is roughly 142.5 main / 22.5 pilot; with the 3×3 a common setup is ~150 main / " +
               "27.5 pilot plus the kit's needle. JD's kit is jetted for your elevation. Verify against " +
               "your altitude and exhaust." },
+    { name: "Manual cam chain tensioner (MCCT)", priority: "Preventive — very common", verified: false,
+      detail: "The stock AUTOMATIC cam-chain tensioner (ACCT) is a known weak spot: as it wears it stops " +
+              "holding tension and lets the cam chain slap. " +
+              "SYMPTOMS the stock one is going off — a rattle/ticking from the cam-chain (right) side that's " +
+              "loudest on a cold start and at idle, often worse on decel or just off throttle, and may fade as " +
+              "revs rise. A slack chain chews the guides, and worst case it skips a tooth — this is an " +
+              "interference engine, so that means bent valves. Don't ride on a rattle you can't explain. " +
+              "THE FIX most owners fit is a manual tensioner you set by hand. " +
+              "ADJUSTING IT — engine COLD and off, and follow YOUR tensioner brand's instructions, because they " +
+              "differ: the general method is to loosen the locknut, gently turn the adjuster in until the chain " +
+              "is just snug with no slack, back it off slightly per the maker's spec, then re-tighten the locknut. " +
+              "DO NOT over-tighten — an over-tensioned chain rapidly wears the chain, guides and cam sprockets, " +
+              "which is worse than mild slack. Re-check at valve-check intervals or any time the rattle returns." },
     { name: "Balancer-shaft adjuster (\"doohickey\") + spring", priority: "Preventive — important", verified: false,
       detail: "The stock balancer-shaft adjuster lever is the DR-Z's known weak point; owners report " +
               "wear/failure that can require splitting the cases. Aftermarket steel replacements are the " +
@@ -201,16 +214,25 @@ window.DB.catalog = {
           { id: "s", label: "DR-Z400S — dual-sport", front: "80/100-21", rear: "120/90-18",
             verified: true, stock: "Bridgestone Trail Wing (adequate; almost everyone replaces them)" },
         ],
-        /* Choice guidance is opinion/experience, not manufacturer spec. */
+        /* Choice guidance is opinion/experience, not manufacturer spec.
+           Always confirm the exact size is offered in 80/100-21 / 120/90-18
+           before ordering — not every model comes in this fitment. */
         choices: [
-          { use: "90/10 — mostly pavement", picks: "Shinko 705, Kenda K761, Michelin Anakee Street",
+          { use: "90/10 — mostly pavement", picks: "Shinko 705, Kenda K761, Pirelli MT60, Tusk DSport",
             note: "Long-wearing, quiet, fine on gravel. Vague in mud." },
-          { use: "50/50 — real dual-sport", picks: "Continental TKC80, Mitas E-07, Shinko 804/805",
-            note: "The honest middle. TKC80 grips everything and wears fast." },
-          { use: "20/80 — dirt-biased DOT knobby", picks: "Dunlop D606, Pirelli MT21, Motoz Tractionator",
-            note: "Excellent off-road, noisy and squirmy on wet tarmac; shorter life." },
-          { use: "Full knobby (green-lane / trail only)", picks: "Motoz Mountain Hybrid, Shinko 216",
+          { use: "50/50 — real dual-sport", picks: "Continental TKC80, Mitas E-07, Pirelli Scorpion Rally STR, Tusk Terrabite",
+            note: "The honest middle. TKC80 grips everything and wears fast; the Terrabite is a hard-wearing radial." },
+          { use: "20/80 — dirt-biased DOT knobby", picks: "Dunlop D606, Pirelli MT21 Rallycross, Motoz Tractionator",
+            note: "Excellent off-road, noisy and squirmy on wet tarmac; shorter life. The MT21 is the classic DR-Z knobby." },
+          { use: "Full knobby (green-lane / trail only)", picks: "Motoz Mountain Hybrid, Shinko 216, Pirelli Scorpion MX (often non-DOT)",
             note: "Best in the dirt; road manners and wear suffer. Rim locks recommended." },
+        ],
+        brandNotes: [
+          { brand: "Pirelli", detail: "Strong dirt-biased range for this fitment — MT21 Rallycross is the long-standing DOT knobby favourite; " +
+                                      "Scorpion Rally STR leans more 50/50; MT60 is the street-biased scrambler option." },
+          { brand: "Tusk (Rocky Mountain ATV/MC house brand)", detail: "Rocky Mountain's own label — noticeably cheaper than the name brands and " +
+                                      "generally well regarded for the money. Terrabite is the durable radial adventure/dual-sport option; " +
+                                      "DSport is the more street-leaning one. Check the size chart on their site for the 21\"/18\" fitment." },
         ],
         pressureNote: "Road ~25–30 psi (verify the swingarm/manual sticker). Air down to ~15–18 psi " +
                       "for dirt — fit rim locks first if you plan to go lower or you'll spin the tyre on the rim.",
@@ -233,12 +255,18 @@ window.DB.catalog = {
             verified: true, stock: "Dunlop D208" },
         ],
         choices: [
-          { use: "Street / all-round", picks: "Dunlop Q-series, Michelin Pilot Power, Pirelli Diablo Rosso",
+          { use: "Street / all-round", picks: "Pirelli Diablo Rosso, Pirelli Angel GT, Dunlop Q-series, Michelin Pilot Power",
             note: "Sticky and fun. The 140/70-17 rear limits options — check availability before committing." },
-          { use: "Track / supermoto racing", picks: "Michelin Power Supermoto, Bridgestone Battlax racing",
+          { use: "Track / supermoto racing", picks: "Michelin Power Supermoto, Pirelli Diablo Supercorsa, Bridgestone Battlax racing",
             note: "Specialist compounds and often not DOT — overkill unless you're actually racing." },
-          { use: "Wet / commuting", picks: "Michelin Road series, Bridgestone Battlax rain",
+          { use: "Wet / commuting", picks: "Pirelli Angel GT, Michelin Road series, Bridgestone Battlax rain",
             note: "Better wet grip and life; less outright dry edge grip." },
+        ],
+        brandNotes: [
+          { brand: "Pirelli", detail: "Best-covered brand for this fitment — Diablo Rosso for sporty street, Angel GT if you want mileage " +
+                                      "and wet grip, Supercorsa if you're actually tracking it." },
+          { brand: "Tusk (Rocky Mountain ATV/MC house brand)", detail: "Tusk's range is aimed at dirt/dual-sport, so there's little for the SM's " +
+                                      "17\" street fitment — worth checking their site, but expect to shop the road brands for this bike." },
         ],
         pressureNote: "Street pressures typically ~29–33 psi cold (verify the manual/sticker). " +
                       "Supermoto riders often drop the rear a few psi for grip — don't go far below spec on the road.",

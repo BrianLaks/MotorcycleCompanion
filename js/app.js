@@ -1492,6 +1492,9 @@ function panelReference() {
         <div class="scroll"><table><tr><th>Use case</th><th>Common picks</th><th>Trade-off</th></tr>
         ${(s.tires.choices || []).map(c => `<tr><td><b>${esc(c.use)}</b></td><td>${esc(c.picks)}</td><td><small>${esc(c.note || "")}</small></td></tr>`).join("")}
         </table></div>` : ""}
+      ${(s.tires.brandNotes || []).length ? `<div class="subhead">Where to buy / brand notes</div>
+        ${(s.tires.brandNotes || []).map(b => `<div class="resetopt"><div class="b"></div>
+          <div><div class="t">${esc(b.brand)}</div><div class="d">${esc(b.detail)}</div></div></div>`).join("")}` : ""}
       ${s.tires.pressureNote ? `<p class="note" style="margin-top:10px">${esc(s.tires.pressureNote)}</p>` : ""}
     </div>` : ""}
 

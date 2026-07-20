@@ -31,14 +31,20 @@ window.DB = window.DB || {};
   const C = {};
 
   /* ---- rolling chassis ---- */
+  /* Tyre + a thin rim ring + a SMALL hub + brake discs. Deliberately open in the
+     middle (no big solid centre disc) so it reads as a spoked/cast wheel rather
+     than one giant hub. */
   C.wheel = (c) => {
     const cx = c.at, R = c.R, tube = c.tube, y = R + tube;
     return [
       { t: "tor", p: [cx, y, 0], s: [R, tube, 18, 34], c: P.TIRE, rough: 0.85, metal: 0 },
-      { t: "cyl", p: [cx, y, 0], r: [1.5708, 0, 0], s: [R * 0.72, R * 0.72, tube * 1.4], c: P.RIM, rough: 0.4, metal: 0.7 },
-      { t: "cyl", p: [cx, y, tube * 1.15], r: [1.5708, 0, 0], s: [R * 0.55, R * 0.55, 0.008], c: P.DISC, rough: 0.35, metal: 0.85 },
-      { t: "cyl", p: [cx, y, -tube * 1.15], r: [1.5708, 0, 0], s: [R * 0.55, R * 0.55, 0.008], c: P.DISC, rough: 0.35, metal: 0.85 },
-      { t: "cyl", p: [cx, y, 0], r: [1.5708, 0, 0], s: [0.06, 0.06, tube * 2.6], c: P.LCAST, rough: 0.5, metal: 0.7 },
+      // rim: a narrow ring just inside the tyre, not a filled disc
+      { t: "tor", p: [cx, y, 0], s: [R * 0.74, R * 0.055, 10, 30], c: P.RIM, rough: 0.35, metal: 0.8 },
+      // brake discs
+      { t: "cyl", p: [cx, y, tube * 1.15], r: [1.5708, 0, 0], s: [R * 0.42, R * 0.42, 0.008], c: P.DISC, rough: 0.35, metal: 0.85 },
+      { t: "cyl", p: [cx, y, -tube * 1.15], r: [1.5708, 0, 0], s: [R * 0.42, R * 0.42, 0.008], c: P.DISC, rough: 0.35, metal: 0.85 },
+      // small hub
+      { t: "cyl", p: [cx, y, 0], r: [1.5708, 0, 0], s: [R * 0.16, R * 0.16, tube * 2.2], c: P.LCAST, rough: 0.5, metal: 0.7 },
     ];
   };
 
