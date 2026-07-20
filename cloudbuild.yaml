@@ -7,12 +7,13 @@ substitutions:
   _REGION: us-central1
   _SERVICE: motorcycle-companion
   _BUCKET: motorcyclecompanion-502718-data
-  _BASIC_AUTH_USER: brian
-  _BASIC_AUTH_PASS: changeme        # set in the trigger's substitutions
-  _GOOGLE_CLIENT_ID: ""             # set once you create the OAuth client
-  _GOOGLE_CLIENT_SECRET: ""         # set in the trigger's substitutions
-  _ALLOWED_EMAILS: ""               # empty = any Google account may sign in
   _IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/motorcycle-companion:${SHORT_SHA}
+
+# NOTE: auth is deliberately NOT managed here. BASIC_AUTH_USER/PASS,
+# GOOGLE_CLIENT_ID/SECRET and ALLOWED_EMAILS are set once on the Cloud Run
+# service itself (gcloud run services update --update-env-vars ...). This
+# pipeline only rebuilds + ships the image, so no secret ever lives in this
+# repo or in a trigger, and an auto-deploy can never wipe your login.
 
 steps:
   - id: build
@@ -35,7 +36,9 @@ steps:
       - --port=8080
       - --max-instances=1
       - --allow-unauthenticated
-      - --set-env-vars=^;^DATA_DIR=/data;BASIC_AUTH_USER=${_BASIC_AUTH_USER};BASIC_AUTH_PASS=${_BASIC_AUTH_PASS};GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID};GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET};ALLOWED_EMAILS=${_ALLOWED_EMAILS}
+      # --update-env-vars MERGES (never replaces), so the auth vars already set
+      # on the service survive every deploy untouched.
+      - --update-env-vars=DATA_DIR=/data
       - --add-volume=name=data,type=cloud-storage,bucket=${_BUCKET}
       - --add-volume-mount=volume=data,mount-path=/data
 
