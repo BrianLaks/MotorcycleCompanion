@@ -31,6 +31,8 @@ function vbadge(v) { return v ? '<span class="ok">✓ verified</span>' : '<span 
 
 /* ---------------- app state (UI only — not persisted user data) -------- */
 const App = {
+  admin: false,          // signed in with the built-in owner password (see /api/me)
+  user: null,
   tab: localStorage.getItem("desmo:tab") || "garage",
   bikeId: localStorage.getItem("desmo:bike") || null,
   wizard: null,          // {date, odometer, selected:Set} while picking
@@ -174,11 +176,12 @@ const TABS = [
   ["valves",  "Valves & shims"],
   ["belts",   "Belt tension"],
   ["reference","Reference"],
+  ["requests","Requests"],   // owner-only — filtered out in renderTabs()
 ];
 function renderTabs() {
   const bike = currentBike();
   const sum = bike ? dueSummary(bike) : { due: 0 };
-  $("#tabs").innerHTML = TABS.map(([id, label]) => {
+  $("#tabs").innerHTML = TABS.filter(([id]) => id !== "requests" || App.admin).map(([id, label]) => {
     const bubble = (id === "due" && sum.due > 0) ? `<span class="bubble">${sum.due}</span>` : "";
     return `<button role="tab" data-tab="${id}" aria-selected="${id === App.tab}">${label}${bubble}</button>`;
   }).join("");
@@ -238,8 +241,23 @@ function panelGarage() {
         <div class="field"><label>Unit</label><select id="nb_unit" class="inp"><option value="mi">miles</option><option value="km">km</option></select></div>
         <button class="iconbtn primary" id="nb_add">Add to garage</button>
       </div>
-      <p class="note" style="margin-top:10px">A model not listed? Add it to <span class="mono">data/catalog.js</span> — see the README.</p>
+      <p class="note" style="margin-top:10px">A model not listed? Request it below (or add it to
+      <span class="mono">data/catalog.js</span> yourself — see the README).</p>
     </div>
+    ${Store.mode === "server" ? `<div class="card">
+      <h2>Request a motorcycle</h2>
+      <p class="note" style="margin-top:0">Riding something that isn't in the list? Send it over and it can be
+      researched and added. Only the site owner sees these.</p>
+      <div class="row-inline" style="margin-top:10px">
+        <div class="field"><label>Make</label><input type="text" id="rq_make" placeholder="e.g. Honda" style="max-width:150px"></div>
+        <div class="field"><label>Model</label><input type="text" id="rq_model" placeholder="e.g. Africa Twin" style="max-width:190px"></div>
+        <div class="field"><label>Year</label><input type="text" id="rq_year" placeholder="e.g. 2019" style="max-width:100px"></div>
+        <div class="field" style="flex:1;min-width:200px"><label>Anything else?</label>
+          <input type="text" id="rq_notes" style="max-width:none;width:100%" placeholder="variant, engine, what you need most"></div>
+        <button class="iconbtn primary" id="rq_send">Send request</button>
+      </div>
+      <p class="note" id="rq_msg" style="margin-top:8px"></p>
+    </div>` : ""}
   </section>`;
 }
 
@@ -276,6 +294,25 @@ function wireGarage() {
       Store.save(); renderAll();
     });
   }
+
+  const send = $("#rq_send");
+  if (send) send.addEventListener("click", async () => {
+    const make = ($("#rq_make").value || "").trim(), model = ($("#rq_model").value || "").trim();
+    const msg = $("#rq_msg");
+    if (!make && !model) { msg.textContent = "Add at least a make or a model."; return; }
+    send.disabled = true; msg.textContent = "Sending…";
+    try {
+      const r = await fetch("api/requests", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ make, model, year: $("#rq_year").value, notes: $("#rq_notes").value }),
+      });
+      if (r.ok) {
+        msg.textContent = "Thanks — request sent.";
+        ["rq_make", "rq_model", "rq_year", "rq_notes"].forEach(id => { const el = $("#" + id); if (el) el.value = ""; });
+      } else msg.textContent = "Couldn't send that — try again.";
+    } catch (e) { msg.textContent = "Couldn't send that — try again."; }
+    send.disabled = false;
+  });
 
   $$("[data-selbike]").forEach(el => el.addEventListener("click", e => {
     if (e.target.closest("[data-rmbike]")) return;
@@ -1517,6 +1554,80 @@ function panelReference() {
 }
 
 /* =========================================================================
+   PANEL — REQUESTS (owner-only queue of "please add my bike")
+   The server enforces this too: GET /api/requests is 403 for anyone who isn't
+   signed in with the built-in password. Hiding the tab is only cosmetic.
+   ========================================================================= */
+function panelRequests() {
+  if (!App.admin) {
+    return `<section class="panel" data-panel="requests"><div class="card">
+      <p class="empty">This queue is only visible to the owner login.</p></div></section>`;
+  }
+  return `<section class="panel" data-panel="requests">
+    <div class="card">
+      <h2 style="display:flex;align-items:center;gap:8px">Motorcycle requests <span class="cnt" id="rq_count"></span>
+        <span style="flex:1"></span>
+        <button class="iconbtn" id="rq_refresh">Refresh</button>
+      </h2>
+      <p class="note" style="margin-top:0">Sent in by people using the app. Visible only to the built-in owner
+      login — anyone signed in with Google can submit one but can't read this list.</p>
+      <div id="rq_list"><p class="empty">Loading…</p></div>
+    </div>
+  </section>`;
+}
+
+function wireRequests() {
+  if (!App.admin) return;
+  const box = $("#rq_list"); if (!box) return;
+
+  const post = (body) => fetch("api/requests/update", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+
+  const load = async () => {
+    box.innerHTML = `<p class="empty">Loading…</p>`;
+    let rows;
+    try {
+      const r = await fetch("api/requests", { cache: "no-store" });
+      if (r.status === 403) { box.innerHTML = `<p class="empty">Owner login required.</p>`; return; }
+      rows = await r.json();
+    } catch (e) { box.innerHTML = `<p class="empty">Couldn't load the requests.</p>`; return; }
+
+    const cnt = $("#rq_count"); if (cnt) cnt.textContent = rows.length ? "· " + rows.length : "";
+    if (!rows.length) { box.innerHTML = `<p class="empty">No requests yet.</p>`; return; }
+
+    box.innerHTML = `<div class="scroll"><table>
+      <tr><th>When</th><th>Bike</th><th>Notes</th><th>From</th><th>Status</th><th></th></tr>
+      ${rows.map(rq => `<tr>
+        <td class="mono">${esc((rq.requestedAt || "").slice(0, 10))}</td>
+        <td><b>${esc([rq.make, rq.model].filter(Boolean).join(" "))}</b>${rq.year ? `<br><span class="note">${esc(rq.year)}</span>` : ""}</td>
+        <td>${esc(rq.notes || "")}</td>
+        <td class="note">${esc(rq.requestedBy || "")}</td>
+        <td><span class="pill ${rq.status === "done" ? "good" : "warn"}">${esc(rq.status || "new")}</span></td>
+        <td style="white-space:nowrap">
+          <button class="iconbtn" data-rq-done="${esc(rq.id)}">${rq.status === "done" ? "Reopen" : "Done"}</button>
+          <button class="iconbtn danger" data-rq-del="${esc(rq.id)}" title="Delete">✕</button></td>
+      </tr>`).join("")}
+    </table></div>`;
+
+    box.querySelectorAll("[data-rq-done]").forEach(b => b.addEventListener("click", async () => {
+      const id = b.getAttribute("data-rq-done");
+      const cur = rows.find(x => x.id === id);
+      await post({ id, status: cur && cur.status === "done" ? "new" : "done" });
+      load();
+    }));
+    box.querySelectorAll("[data-rq-del]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm("Delete this request?")) return;
+      await post({ id: b.getAttribute("data-rq-del"), delete: true });
+      load();
+    }));
+  };
+
+  const rf = $("#rq_refresh"); if (rf) rf.addEventListener("click", load);
+  load();
+}
+
+/* =========================================================================
    RENDER + WIRE EVERYTHING
    ========================================================================= */
 const PANELS = {
@@ -1528,6 +1639,7 @@ const PANELS = {
   valves:    { render: panelValves,    wire: wireValves },
   belts:     { render: panelBelts,     wire: wireBelts },
   reference: { render: panelReference, wire: null },
+  requests:  { render: panelRequests,  wire: wireRequests },
 };
 
 /* =========================================================================
@@ -1656,7 +1768,11 @@ function wireChrome() {
 /* ---------------- boot ---------------- */
 Store.onStatus = setStorageChip;
 window.DesmoReport = buildReportHtml; // small public hook: build a bike's report HTML
-Store.init().then(() => {
+Store.init().then(async () => {
+  try {                                   // who am I? drives the owner-only UI
+    const r = await fetch("api/me", { cache: "no-store" });
+    if (r.ok) { const me = await r.json(); App.admin = !!me.admin; App.user = me.user; }
+  } catch (e) { /* file:// or no server — stays non-admin */ }
   wireChrome();
   renderAll();
 });

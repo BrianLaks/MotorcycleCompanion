@@ -48,6 +48,32 @@ function readDb() {
   catch { return "{}"; }
 }
 
+/* ---- motorcycle requests -------------------------------------------------
+   Kept in their OWN file, deliberately NOT inside db.json: the whole of
+   db.json is served to any signed-in user, so anything stored there would be
+   readable by everyone. Requests are owner-only, so they live here and are
+   served exclusively through the admin-gated /api/requests route.          */
+const REQ_FILE = path.join(DATA_DIR, "requests.json");
+const MAX_REQUESTS = 500;
+const clip = (v, n) => String(v == null ? "" : v).slice(0, n).trim();
+
+function readRequests() {
+  try { const j = JSON.parse(fs.readFileSync(REQ_FILE, "utf8")); return Array.isArray(j) ? j : []; }
+  catch { return []; }
+}
+function writeRequests(list, cb) {
+  const tmp = REQ_FILE + ".tmp";
+  fs.writeFile(tmp, JSON.stringify(list, null, 2), err => err ? cb(err) : fs.rename(tmp, REQ_FILE, cb));
+}
+function readBody(req, res, cb) {           // small JSON body reader with a cap
+  let body = "";
+  req.on("data", c => { body += c; if (body.length > 64 * 1024) req.destroy(); });
+  req.on("end", () => {
+    try { cb(JSON.parse(body || "{}")); }
+    catch { res.writeHead(400, { "Content-Type": "application/json" }); res.end('{"error":"invalid JSON"}'); }
+  });
+}
+
 function writeDb(text, cb) {
   // Atomic-ish write: temp file then rename, plus a rolling .bak of the
   // previous version so a bad write never destroys the only copy.
@@ -78,6 +104,78 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(auth.loginPage(req));
     }
+    return;
+  }
+
+  /* ---- who am I (drives the admin-only UI) ---- */
+  if (pathname === "/api/me" && req.method === "GET") {
+    const s = auth.sessionOf(req);
+    res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+    res.end(JSON.stringify({ user: s ? s.sub : null, admin: auth.isAdmin(req) }));
+    return;
+  }
+
+  /* ---- motorcycle requests ----
+     POST: any signed-in user may submit.
+     GET / update: ADMIN ONLY (the built-in password login). Enforced here on
+     the server — the client's admin flag is only for hiding UI.            */
+  if (pathname === "/api/requests") {
+    if (req.method === "POST") {
+      readBody(req, res, body => {
+        const make = clip(body.make, 60), model = clip(body.model, 80);
+        if (!make && !model) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end('{"error":"make or model is required"}'); return;
+        }
+        const s = auth.sessionOf(req);
+        const list = readRequests();
+        if (list.length >= MAX_REQUESTS) {
+          res.writeHead(429, { "Content-Type": "application/json" });
+          res.end('{"error":"request queue is full"}'); return;
+        }
+        list.unshift({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+          make, model,
+          year: clip(body.year, 12),
+          notes: clip(body.notes, 800),
+          requestedBy: s ? s.sub : "unknown",   // server-stamped, not client-supplied
+          requestedAt: new Date().toISOString(),
+          status: "new",
+        });
+        writeRequests(list, err => {
+          if (err) { res.writeHead(500); res.end('{"error":"could not save"}'); }
+          else { res.writeHead(200, { "Content-Type": "application/json" }); res.end('{"ok":true}'); }
+        });
+      });
+      return;
+    }
+    if (req.method === "GET") {
+      if (!auth.isAdmin(req)) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end('{"error":"admin only"}'); return;
+      }
+      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+      res.end(JSON.stringify(readRequests()));
+      return;
+    }
+    res.writeHead(405); res.end(); return;
+  }
+
+  /* ---- admin: change a request's status / delete it ---- */
+  if (pathname === "/api/requests/update" && req.method === "POST") {
+    if (!auth.isAdmin(req)) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end('{"error":"admin only"}'); return;
+    }
+    readBody(req, res, body => {
+      let list = readRequests();
+      if (body.delete) list = list.filter(r => r.id !== body.id);
+      else list = list.map(r => r.id === body.id ? { ...r, status: clip(body.status, 20) || r.status } : r);
+      writeRequests(list, err => {
+        if (err) { res.writeHead(500); res.end('{"error":"could not save"}'); }
+        else { res.writeHead(200, { "Content-Type": "application/json" }); res.end('{"ok":true}'); }
+      });
+    });
     return;
   }
 

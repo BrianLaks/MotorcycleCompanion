@@ -82,6 +82,24 @@ function isAuthed(req) {
   return !!readSession(parseCookies(req).mc_session) || basicOk(req);
 }
 
+/* Who is this request? { sub } where sub is a Google email, or the literal
+   "password" for the built-in shared-password login. null when not signed in. */
+function sessionOf(req) {
+  const s = readSession(parseCookies(req).mc_session);
+  if (s) return s;
+  if (basicOk(req)) return { sub: "password" };
+  return null;
+}
+
+/* ADMIN = signed in with the built-in shared password (or the Basic Auth
+   header), NOT with Google. Used to gate owner-only data like the motorcycle
+   request queue. With no auth configured at all (local dev) everyone is admin. */
+function isAdmin(req) {
+  if (!enabled) return true;
+  const s = sessionOf(req);
+  return !!s && s.sub === "password";
+}
+
 /* ---------- Google OAuth ---------- */
 function exchangeCode(code, redirect, cb) {
   const body = new URLSearchParams({
@@ -211,4 +229,4 @@ function handleAuthRoute(req, res, pathname, url) {
   return false;
 }
 
-module.exports = { enabled, isAuthed, handleAuthRoute, loginPage };
+module.exports = { enabled, isAuthed, isAdmin, sessionOf, handleAuthRoute, loginPage };
