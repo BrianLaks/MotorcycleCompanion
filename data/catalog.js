@@ -8,6 +8,87 @@
    ========================================================================= */
 window.DB = window.DB || {};
 
+/* -------------------------------------------------------------------------
+   Shared Suzuki DR-Z400 data. The S (dual-sport) and SM (supermoto) are
+   different motorcycles — different wheels, suspension, brakes, seat height
+   and tyres — but they share the same engine, service intervals, dry-sump oil
+   procedure and mod list, so those live here once and both models point at them.
+   ------------------------------------------------------------------------- */
+const DRZ_OIL_PROCEDURE = {
+  note: "DRY SUMP — the oil lives in the FRAME. There are TWO drain plugs (engine case " +
+        "and frame) plus the filter, and the level check has a specific procedure that " +
+        "trips up most people. Measure by volume; don't trust a cold dipstick reading.",
+  steps: [
+    "Warm the engine ~5 min (or a short ride), then shut off and let it sit 2–3 min so oil drains back",
+    "Bike UPRIGHT and level — NOT on the side stand (this is the #1 mistake)",
+    "Remove the frame drain plug AND the engine case drain plug — drain both",
+    "Remove and replace the oil filter (behind the cover on the right case); note O-ring orientation",
+    "Clean/refit both drain plugs with new washers; torque to spec",
+    "Refill with ~1.7 L / 1.8 US qt of 10W-40 JASO MA — measure it, don't eyeball it",
+    "Start, idle ~1 min to fill the frame and filter, shut off, wait 2–3 min",
+    "Check level: insert the dipstick until the threads TOUCH the neck — do NOT screw it in — bike vertical",
+    "Top up only to the upper mark. Overfilling pushes oil away from the dipstick tube and reads false",
+    "Re-check for leaks at both plugs and the filter cover",
+  ],
+};
+
+const DRZ_MODS = {
+  note: "The DR-Z is famously under-carbureted from the factory and has one known weak " +
+        "internal part. These are the mods the community does first. All are owner " +
+        "opinion / community consensus — none are Suzuki-specified.",
+  items: [
+    { name: "3×3 airbox mod + rejet", priority: "Do first (together)", verified: false,
+      detail: "Cut a 3\"×3\" opening in the airbox lid to unrestrict intake. The stock carb is " +
+              "already lean, so this MUST be paired with rejetting or it runs worse and backfires. " +
+              "Cheapest real power gain on the bike." },
+    { name: "Jetting kit (JD Jetting / Dynojet)", priority: "Do first (together)", verified: false,
+      detail: "Stock is roughly 142.5 main / 22.5 pilot; with the 3×3 a common setup is ~150 main / " +
+              "27.5 pilot plus the kit's needle. JD's kit is jetted for your elevation. Verify against " +
+              "your altitude and exhaust." },
+    { name: "Balancer-shaft adjuster (\"doohickey\") + spring", priority: "Preventive — important", verified: false,
+      detail: "The stock balancer-shaft adjuster lever is the DR-Z's known weak point; owners report " +
+              "wear/failure that can require splitting the cases. Aftermarket steel replacements are the " +
+              "standard preventive fix. Widely reported by the community — confirm condition before you " +
+              "assume yours is fine." },
+    { name: "Exhaust (slip-on or full)", priority: "Optional", verified: false,
+      detail: "FMF Q4/PowerCore and similar. Wakes it up, but rejet again after fitting — this is the " +
+              "third leg of the intake/jetting/exhaust stool." },
+    { name: "Gearing change", priority: "Optional", verified: false,
+      detail: "Stock gearing is a compromise. Taller (bigger front / smaller rear) calms highway revs; " +
+              "shorter helps technical dirt. Cheap to try — change the front sprocket first." },
+    { name: "Protection: skid plate, radiator guards, hand guards", priority: "If you ride dirt", verified: false,
+      detail: "The frame carries the oil, so a frame/case hit is not just cosmetic. Radiator guards " +
+              "are cheap insurance on a tip-over." },
+    { name: "Suspension setup for your weight", priority: "Underrated", verified: false,
+      detail: "Stock springs are set for a light rider. Correct springs/sag transform the bike more " +
+              "than any engine mod." },
+  ],
+};
+
+/* Engine/service bits identical across both DR-Z variants. */
+const DRZ_ENGINE = {
+  brand: "suzuki",
+  disp: "398",
+  spark: "Single spark",
+  engine: "DOHC liquid-cooled single · 4 valves · carbureted (Mikuni BSR36) · chain cam drive",
+  scheduleId: "suzuki_drz400",
+  valveType: "shim",
+  finalDrive: "chain",
+  plugs: { count: 1, type: "NGK CR8E", verified: true, note: "1 per cylinder (Denso U24ESR-N equivalent)" },
+  airFilter: { part: "13780-29F00", verified: false, note: "OEM element — verify for your year; oiled-foam aftermarket (Uni/Twin Air) is the common upgrade" },
+  oilFilter: { part: "16510-05240", verified: false, note: "verify against the fiche for your year" },
+  oilCapacityL: { value: 1.7, verified: true,
+                  note: "1.7 L / 1.8 US qt WITH filter change. Dry sump — the oil lives in the frame, not a wet sump." },
+  oil: "SAE 10W-40 · API SF/SG or SH/SJ · JASO MA (wet clutch — no friction modifiers)",
+  coolant: "Suzuki Super Long Life (ethylene-glycol, silicate-free)",
+  shim: "Shim-under-bucket (conventional) — NOT desmodromic",
+  clearance: { openMin: 0.10, openMax: 0.20, closeMin: 0.20, closeMax: 0.30, verified: true,
+               note: "COLD. Intake 0.10–0.20 mm, exhaust 0.20–0.30 mm" },
+  serviceOverrides: { oil_change: DRZ_OIL_PROCEDURE },
+  mods: DRZ_MODS,
+  yearOverrides: {},
+};
+
 window.DB.catalog = {
   models: {
     mts950: {
@@ -106,114 +187,62 @@ window.DB.catalog = {
        NOTE the dry-sump quirk: the oil lives in the FRAME, and the level check has
        a specific procedure (see `serviceOverrides.oil_change`). No ECU service
        reminder on this bike, so no resetId. */
-    drz400: {
-      name: "DR-Z400S / SM",
-      brand: "suzuki",
+    /* THE dual-sport. 21"/18" spoked wheels, long-travel suspension, 36.8" seat. */
+    drz400s: {
+      ...DRZ_ENGINE,
+      name: "DR-Z400S",
       years: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
               2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
       defaultYear: 2006,
-      disp: "398",
-      spark: "Single spark",
-      engine: "DOHC liquid-cooled single · 4 valves · carbureted (Mikuni BSR36) · chain cam drive",
-      scheduleId: "suzuki_drz400",
-      valveType: "shim",
-      finalDrive: "chain",
-      plugs: { count: 1, type: "NGK CR8E", verified: true, note: "1 per cylinder (Denso U24ESR-N equivalent)" },
-      airFilter: { part: "13780-29F00", verified: false, note: "OEM element — verify for your year; oiled-foam aftermarket (Uni/Twin Air) is the common upgrade" },
-      oilFilter: { part: "16510-05240", verified: false, note: "verify against the fiche for your year" },
-      oilCapacityL: { value: 1.7, verified: true,
-                      note: "1.7 L / 1.8 US qt WITH filter change. Dry sump — the oil lives in the frame, not a wet sump." },
-      oil: "SAE 10W-40 · API SF/SG or SH/SJ · JASO MA (wet clutch — no friction modifiers)",
-      coolant: "Suzuki Super Long Life (ethylene-glycol, silicate-free)",
-      shim: "Shim-under-bucket (conventional) — NOT desmodromic",
-      clearance: { openMin: 0.10, openMax: 0.20, closeMin: 0.20, closeMax: 0.30, verified: true,
-                   note: "COLD. Intake 0.10–0.20 mm, exhaust 0.20–0.30 mm" },
-
-      /* ---- Tyres: the S and SM are completely different fitments ---- */
       tires: {
-        note: "The DR-Z400S (dual-sport) and DR-Z400SM (supermoto) share an engine but " +
-              "nothing below the axles. Confirm which wheels you actually have before ordering.",
+        note: "Dual-sport fitment — 21\" front / 18\" rear spoked wheels. The stock Trail Wings " +
+              "are the first thing most owners bin; pick by how much dirt you actually ride.",
         variants: [
-          { id: "s", label: "DR-Z400S — dual-sport (21\" / 18\")",
-            front: "80/100-21", rear: "120/90-18", verified: true,
-            stock: "Bridgestone Trail Wing (adequate; almost everyone replaces them)" },
-          { id: "sm", label: "DR-Z400SM — supermoto (17\" / 17\")",
-            front: "120/70-17", rear: "140/70-17", verified: true,
-            stock: "Dunlop D208" },
+          { id: "s", label: "DR-Z400S — dual-sport", front: "80/100-21", rear: "120/90-18",
+            verified: true, stock: "Bridgestone Trail Wing (adequate; almost everyone replaces them)" },
         ],
         /* Choice guidance is opinion/experience, not manufacturer spec. */
         choices: [
-          { use: "90/10 — mostly pavement (S)", picks: "Shinko 705, Kenda K761, Michelin Anakee Street",
+          { use: "90/10 — mostly pavement", picks: "Shinko 705, Kenda K761, Michelin Anakee Street",
             note: "Long-wearing, quiet, fine on gravel. Vague in mud." },
-          { use: "50/50 — real dual-sport (S)", picks: "Continental TKC80, Mitas E-07, Shinko 804/805",
+          { use: "50/50 — real dual-sport", picks: "Continental TKC80, Mitas E-07, Shinko 804/805",
             note: "The honest middle. TKC80 grips everything and wears fast." },
-          { use: "20/80 — dirt-biased DOT knobby (S)", picks: "Dunlop D606, Pirelli MT21, Motoz Tractionator",
+          { use: "20/80 — dirt-biased DOT knobby", picks: "Dunlop D606, Pirelli MT21, Motoz Tractionator",
             note: "Excellent off-road, noisy and squirmy on wet tarmac; shorter life." },
-          { use: "Supermoto street (SM)", picks: "Dunlop Q-series, Michelin Pilot Power, Pirelli Diablo Rosso",
-            note: "Sticky and fun; the 17\" fitment is small so choice is limited." },
-          { use: "Supermoto track/rain (SM)", picks: "Bridgestone Battlax rain, Michelin Power Supermoto",
-            note: "Specialist compounds — overkill unless you're racing." },
+          { use: "Full knobby (green-lane / trail only)", picks: "Motoz Mountain Hybrid, Shinko 216",
+            note: "Best in the dirt; road manners and wear suffer. Rim locks recommended." },
         ],
-        pressureNote: "Road pressures typically ~25–30 psi (verify the swingarm/manual sticker); " +
-                      "air down substantially for dirt on the S, and use rim locks if you go low.",
+        pressureNote: "Road ~25–30 psi (verify the swingarm/manual sticker). Air down to ~15–18 psi " +
+                      "for dirt — fit rim locks first if you plan to go lower or you'll spin the tyre on the rim.",
       },
+    },
 
-      /* ---- Bike-specific service procedure overrides ---- */
-      serviceOverrides: {
-        oil_change: {
-          note: "DRY SUMP — the oil lives in the FRAME. There are TWO drain plugs (engine case " +
-                "and frame) plus the filter, and the level check has a specific procedure that " +
-                "trips up most people. Measure by volume; don't trust a cold dipstick reading.",
-          steps: [
-            "Warm the engine ~5 min (or a short ride), then shut off and let it sit 2–3 min so oil drains back",
-            "Bike UPRIGHT and level — NOT on the side stand (this is the #1 mistake)",
-            "Remove the frame drain plug AND the engine case drain plug — drain both",
-            "Remove and replace the oil filter (behind the cover on the right case); note O-ring orientation",
-            "Clean/refit both drain plugs with new washers; torque to spec",
-            "Refill with ~1.7 L / 1.8 US qt of 10W-40 JASO MA — measure it, don't eyeball it",
-            "Start, idle ~1 min to fill the frame and filter, shut off, wait 2–3 min",
-            "Check level: insert the dipstick until the threads TOUCH the neck — do NOT screw it in — bike vertical",
-            "Top up only to the upper mark. Overfilling pushes oil away from the dipstick tube and reads false",
-            "Re-check for leaks at both plugs and the filter cover",
-          ],
-        },
-      },
-
-      /* ---- Recommended modifications (community consensus, not factory) ---- */
-      mods: {
-        note: "The DR-Z is famously under-carbureted from the factory and has one known weak " +
-              "internal part. These are the mods the community does first. All are owner " +
-              "opinion / community consensus — none are Suzuki-specified.",
-        items: [
-          { name: "3×3 airbox mod + rejet", priority: "Do first (together)", verified: false,
-            detail: "Cut a 3\"×3\" opening in the airbox lid to unrestrict intake. The stock carb is " +
-                    "already lean, so this MUST be paired with rejetting or it runs worse and backfires. " +
-                    "Cheapest real power gain on the bike." },
-          { name: "Jetting kit (JD Jetting / Dynojet)", priority: "Do first (together)", verified: false,
-            detail: "Stock is roughly 142.5 main / 22.5 pilot; with the 3×3 a common setup is ~150 main / " +
-                    "27.5 pilot plus the kit's needle. JD's kit is jetted for your elevation. Verify against " +
-                    "your altitude and exhaust." },
-          { name: "Balancer-shaft adjuster (\"doohickey\") + spring", priority: "Preventive — important", verified: false,
-            detail: "The stock balancer-shaft adjuster lever is the DR-Z's known weak point; owners report " +
-                    "wear/failure that can require splitting the cases. Aftermarket steel replacements are the " +
-                    "standard preventive fix. Widely reported by the community — confirm condition before you " +
-                    "assume yours is fine." },
-          { name: "Exhaust (slip-on or full)", priority: "Optional", verified: false,
-            detail: "FMF Q4/PowerCore and similar. Wakes it up, but rejet again after fitting — this is the " +
-                    "third leg of the intake/jetting/exhaust stool." },
-          { name: "Gearing change", priority: "Optional", verified: false,
-            detail: "Stock gearing is a compromise. Taller (bigger front / smaller rear) calms highway revs; " +
-                    "shorter helps technical dirt. Cheap to try — change the front sprocket first." },
-          { name: "Protection: skid plate, radiator guards, hand guards", priority: "If you ride dirt", verified: false,
-            detail: "The frame carries the oil, so a frame/case hit is not just cosmetic. Radiator guards " +
-                    "are cheap insurance on a tip-over." },
-          { name: "Suspension setup for your weight", priority: "Underrated", verified: false,
-            detail: "Stock springs are set for a light rider. Correct springs/sag transform the bike more " +
-                    "than any engine mod." },
+    /* The supermoto: same engine, completely different chassis setup — 17" cast
+       wheels, bigger front brake, shorter/stiffer suspension, 35" seat, street rubber. */
+    drz400sm: {
+      ...DRZ_ENGINE,
+      name: "DR-Z400SM",
+      years: [2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
+              2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      defaultYear: 2008,
+      tires: {
+        note: "Supermoto fitment — 17\" wheels both ends with street rubber. Sizes are small for a " +
+              "sportbike tyre, so the choice list is shorter than you'd expect.",
+        variants: [
+          { id: "sm", label: "DR-Z400SM — supermoto", front: "120/70-17", rear: "140/70-17",
+            verified: true, stock: "Dunlop D208" },
         ],
+        choices: [
+          { use: "Street / all-round", picks: "Dunlop Q-series, Michelin Pilot Power, Pirelli Diablo Rosso",
+            note: "Sticky and fun. The 140/70-17 rear limits options — check availability before committing." },
+          { use: "Track / supermoto racing", picks: "Michelin Power Supermoto, Bridgestone Battlax racing",
+            note: "Specialist compounds and often not DOT — overkill unless you're actually racing." },
+          { use: "Wet / commuting", picks: "Michelin Road series, Bridgestone Battlax rain",
+            note: "Better wet grip and life; less outright dry edge grip." },
+        ],
+        pressureNote: "Street pressures typically ~29–33 psi cold (verify the manual/sticker). " +
+                      "Supermoto riders often drop the rear a few psi for grip — don't go far below spec on the road.",
       },
-
-      yearOverrides: {},
     },
   },
 

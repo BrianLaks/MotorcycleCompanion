@@ -215,10 +215,10 @@ window.DB.bikes3d = {
     },
   },
 
-  /* Suzuki DR-Z400S/SM — dual-sport. Uses the `dualsport` archetype: single seat,
-     no windscreen, 21"/18" wheels, high front fender, and small shroud/number
-     panels up by the tank instead of low fairings. Suzuki yellow. */
-  drz400: {
+  /* Suzuki DR-Z400S — the dual-sport. Uses the `dualsport` archetype: single seat,
+     no windscreen, tall 21"/18" spoked wheels, high front fender, and small
+     shroud/number panels up by the tank instead of low fairings. Suzuki yellow. */
+  drz400s: {
     archetype: "dualsport",
     colors: { paint: "#F5C518", frame: "#2A2C31", cam: "#3A3D44" },
     scene: {
@@ -283,6 +283,22 @@ window.DB.bikes3d = {
       ],
     },
   },
+};
+
+/* Suzuki DR-Z400SM — same bike from the frame up, completely different rolling
+   chassis: fat 17" wheels both ends, shorter fork, low street fender. Bodywork
+   and therefore the teardown are identical, so it reuses the S's scene. */
+window.DB.bikes3d.drz400sm = {
+  archetype: "dualsport",
+  colors: { paint: "#1B4FA0", frame: "#2A2C31", cam: "#3A3D44" },  // SM in Suzuki blue
+  slots: {
+    wheelFront: { at: 1.00, R: 0.24, tube: 0.085 },   // 17" street, wide
+    wheelRear:  { at: -0.95, R: 0.23, tube: 0.105 },
+    fork:       { tubeAt: [0.84, 0.70], zOff: 0.09, angle: 0.42, len: 0.86, clampAt: [0.68, 1.06] },
+    frontFender:{ at: [0.98, 0.56], angle: -0.12, size: [0.40, 0.04, 0.22] }, // low, hugs the wheel
+    finalDrive: { comp: "chain", front: [-0.30, 0.55], rear: [-0.95, 0.23], z: -0.14 },
+  },
+  scene: window.DB.bikes3d.drz400s.scene,   // identical bodywork teardown
 };
 
 /* =========================================================================

@@ -212,9 +212,10 @@ window.DB.accessModules = {
     },
   },
 
-  /* Suzuki DR-Z400 (S/SM). Carbureted single — no belt covers, no ECU tray.
+  /* Suzuki DR-Z400S. Carbureted single — no belt covers, no ECU tray.
+     The SM shares this teardown exactly (see the alias below the object).
      Steps are DR-Z-plausible; confirm against the service manual / a teardown video. */
-  drz400: {
+  drz400s: {
     bodywork: {
       label: "Seat & side panels",
       needs: [],
@@ -274,3 +275,6 @@ window.DB.accessModules = {
     },
   },
 };
+
+/* The SM's bodywork and engine access are identical to the S — same modules. */
+window.DB.accessModules.drz400sm = window.DB.accessModules.drz400s;
